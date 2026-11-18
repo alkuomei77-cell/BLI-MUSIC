@@ -15,7 +15,7 @@ jobs:
       - name: Download project
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -23,12 +23,15 @@ jobs:
 
       - name: Extract project
         run: |
-          mkdir -p extracted
           unzip -o BLI_MUSIC_Mobile_Project.zip -d extracted
 
       - name: Build APK
         run: |
-          GRADLEW=$(find extracted -name gradlew -type f | head -n 1)
+          GRADLEW=$(find extracted -type f -name gradlew | head -n 1)
+          if [ -z "$GRADLEW" ]; then
+            echo "ERROR: Gradle wrapper not found"
+            exit 1
+          fi
           chmod +x "$GRADLEW"
           cd "$(dirname "$GRADLEW")"
           ./gradlew assembleDebug
@@ -38,4 +41,4 @@ jobs:
         with:
           name: BLI-MUSIC-APK
           path: extracted/**/app/build/outputs/apk/debug/*.apk
-
+          if-no-files-found: error
